@@ -1,0 +1,8 @@
+name: AFKPlusVelocity
+version: '${version}'
+main: com.yangline.afkplusvelocity.AFKPlusBukkit
+api-version: '1.18'
+depend:
+  - AFKPlus
+  - PlaceholderAPI
+authors: [Yang Line]
