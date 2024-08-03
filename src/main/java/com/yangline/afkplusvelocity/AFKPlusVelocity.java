@@ -16,23 +16,22 @@ import java.util.logging.Logger;
 
 @Plugin(id = "afkplusvelocity", name = "AFKPlusVelocity", version = "1.0", authors = "Yang Line")
 public class AFKPlusVelocity {
-    private static final MinecraftChannelIdentifier CHANNEL =  MinecraftChannelIdentifier.create("afkplusvelocity", "afk");
+    private static final MinecraftChannelIdentifier CHANNEL = MinecraftChannelIdentifier.create("afkplusvelocity", "afk-broadcast");
 
     private final ProxyServer server;
-
     private final Logger logger;
 
     @Inject
     public AFKPlusVelocity(ProxyServer server, Logger logger) {
         this.server = server;
         this.logger = logger;
-        server.getChannelRegistrar().register(CHANNEL);
-        server.getEventManager().register(this, new MessageListener(server, logger));
     }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("AFKPlusVelocity has been enabled!");
+        server.getChannelRegistrar().register(CHANNEL);
+        server.getEventManager().register(this, new MessageListener(server, logger));
     }
 
     @Subscribe
@@ -44,7 +43,6 @@ public class AFKPlusVelocity {
         private final ProxyServer server;
         private final Logger logger;
 
-        @Inject
         public MessageListener(ProxyServer server, Logger logger) {
             this.server = server;
             this.logger = logger;
@@ -52,21 +50,21 @@ public class AFKPlusVelocity {
 
         @Subscribe
         public void onPluginMessage(@NotNull PluginMessageEvent event) {
-            Player sender = event.getSource() instanceof Player ? (Player) event.getSource() : null;
+            if (event.getIdentifier().equals(CHANNEL)) {
+                Player sender = event.getSource() instanceof Player ? (Player) event.getSource() : null;
 
-            for (RegisteredServer server : this.server.getAllServers()) {
-                if (server != null) {
-                    // Exclude servers from sending messages
-                    if (sender != null && sender.getCurrentServer().map(s -> s.getServerInfo().equals(server.getServerInfo())).orElse(false)) {
-                        continue;
+                for (RegisteredServer server : this.server.getAllServers()) {
+                    if (server != null) {
+                        // Exclude servers from sending messages
+                        if (sender != null && sender.getCurrentServer().map(s ->
+                                s.getServerInfo().equals(server.getServerInfo())).orElse(false)) continue;
+                        server.sendPluginMessage(CHANNEL, event.getData());
                     }
-                    server.sendPluginMessage(CHANNEL, event.getData());
                 }
-            }
-            if (sender != null) {
-                logger.info("Sent AFK message of \"" + sender.getUsername() + "\" success");
+                if (sender != null) {
+                    logger.info("Sent AFK message of \"" + sender.getUsername() + "\" success");
+                }
             }
         }
     }
 }
-
