@@ -1,5 +1,0 @@
-#The values for %afkplus_afk%
-#If the player is AFK
-true: "[AFK]"
-#If the player isn't afk
-false: ""
